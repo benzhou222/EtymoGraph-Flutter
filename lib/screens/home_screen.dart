@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../widgets/etymology_visualizer.dart';
+import '../services/tts_service.dart';
 import '../widgets/timeline_widget.dart';
 import '../widgets/cognates_list.dart';
 import '../widgets/examples_widget.dart';
@@ -152,11 +153,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                         fontSize: 48,
                                         fontWeight: FontWeight.bold,
                                         fontFamily: 'serif')),
-                                Text("[${provider.data!.pronunciation}]",
-                                    style: const TextStyle(
-                                        fontSize: 18,
-                                        fontFamily: 'monospace',
-                                        color: Colors.grey)),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text("[${provider.data!.pronunciation}]",
+                                        style: const TextStyle(
+                                            fontSize: 18,
+                                            fontFamily: 'monospace',
+                                            color: Colors.grey)),
+                                    const SizedBox(width: 8),
+                                    IconButton(
+                                      icon: const Icon(Icons.volume_up,
+                                          size: 20, color: Colors.blueAccent),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      onPressed: () =>
+                                          // speak the main word (not the phonetic itself)
+                                          TTSService().speak(
+                                              provider.data!.word,
+                                              waitForStop: false),
+                                    ),
+                                  ],
+                                ),
                                 const SizedBox(height: 16),
                                 Text(provider.data!.basicDefinition,
                                     style: const TextStyle(fontSize: 20),

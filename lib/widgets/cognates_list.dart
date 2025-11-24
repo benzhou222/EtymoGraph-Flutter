@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/tts_service.dart';
 import '../models.dart';
 
 class CognatesList extends StatelessWidget {
@@ -56,28 +57,48 @@ class CognatesList extends StatelessWidget {
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 16)),
-                                Text("[${item.pronunciation}]",
-                                    style: const TextStyle(
-                                        fontFamily: 'monospace',
-                                        fontSize: 13,
-                                        color: Colors.grey)),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text("[${item.pronunciation}]",
+                                        style: const TextStyle(
+                                            fontFamily: 'monospace',
+                                            fontSize: 13,
+                                            color: Colors.grey)),
+                                    const SizedBox(width: 8),
+                                    IconButton(
+                                      icon: const Icon(Icons.volume_up,
+                                          size: 18, color: Colors.blueAccent),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      onPressed: () => TTSService()
+                                          .speak(item.word, waitForStop: false),
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Container(
-                            constraints: const BoxConstraints(maxWidth: 160),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .surfaceContainerHighest,
-                                borderRadius: BorderRadius.circular(8)),
-                            child: Text(
-                              item.relation,
-                              style: const TextStyle(fontSize: 11),
-                              textAlign: TextAlign.center,
+                          Flexible(
+                            fit: FlexFit.loose,
+                            child: Container(
+                              constraints: const BoxConstraints(maxWidth: 420),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 8),
+                              decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(8)),
+                              child: Text(
+                                item.relation,
+                                style: const TextStyle(fontSize: 12),
+                                textAlign: TextAlign.left,
+                                softWrap: true,
+                                maxLines: 6,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           ),
                         ],

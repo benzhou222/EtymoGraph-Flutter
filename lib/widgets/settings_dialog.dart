@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../providers/app_provider.dart';
 import '../models.dart';
 
@@ -15,6 +17,8 @@ class _SettingsDialogState extends State<SettingsDialog> {
   late TextEditingController _geminiKeyCtrl;
   late TextEditingController _localUrlCtrl;
   late TextEditingController _localModelCtrl;
+  List<String> _localModelCandidates = [];
+  bool _isFetchingModels = false;
   bool _showModelDropdown = false;
   bool _isSaving = false;
 
@@ -26,6 +30,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
     _geminiKeyCtrl = TextEditingController(text: settings.geminiApiKey);
     _localUrlCtrl = TextEditingController(text: settings.localApiUrl);
     _localModelCtrl = TextEditingController(text: settings.localModelName);
+    _localModelCandidates = List<String>.from(settings.savedModels);
   }
 
   Future<void> _save() async {
@@ -39,6 +44,10 @@ class _SettingsDialogState extends State<SettingsDialog> {
       // This ensures we are not passing an immutable list back to the provider
       final List<String> safeSavedModels =
           List<String>.from(currentSettings.savedModels);
+      // Merge any candidates discovered during the session, keeping uniqueness
+      for (final m in _localModelCandidates) {
+        if (!safeSavedModels.contains(m)) safeSavedModels.add(m);
+      }
 
       final newSettings = AppSettings(
         provider: _provider,
@@ -64,10 +73,142 @@ class _SettingsDialogState extends State<SettingsDialog> {
     }
   }
 
+  Future<void> _fetchModels() async {
+    if (_isFetchingModels) return;
+    setState(() => _isFetchingModels = true);
+
+    try {
+      var urlStr = _localUrlCtrl.text.trim();
+      if (urlStr.isEmpty) throw Exception('Local API URL is empty');
+
+      // Extract origin so we can try common endpoints
+      Uri baseUri;
+      try {
+        baseUri = Uri.parse(urlStr);
+        if (baseUri.scheme.isEmpty || baseUri.host.isEmpty) {
+          // If user omitted scheme, assume http
+          baseUri = Uri.parse('http://$urlStr');
+        }
+      } catch (e) {
+        baseUri = Uri.parse('http://$urlStr');
+      }
+      final origin = baseUri.origin;
+
+      final triedEndpoints = [
+        '$origin/v1/models',
+        '$origin/models',
+        '$origin/v1/engines',
+      ];
+
+      List<String> found = [];
+      for (final endpoint in triedEndpoints) {
+        try {
+          final resp = await http
+              .get(Uri.parse(endpoint))
+              .timeout(const Duration(seconds: 5));
+          if (resp.statusCode == 200) {
+            final names = _parseModelsFromBody(resp.body);
+            if (names.isNotEmpty) {
+              found = names;
+              break;
+            }
+          }
+        } catch (_) {
+          // ignore, try next
+        }
+      }
+
+      if (found.isEmpty) {
+        // Try the direct URL if the user input exactly the models endpoint
+        try {
+          final resp =
+              await http.get(baseUri).timeout(const Duration(seconds: 5));
+          if (resp.statusCode == 200) {
+            final names = _parseModelsFromBody(resp.body);
+            if (names.isNotEmpty) found = names;
+          }
+        } catch (_) {}
+      }
+
+      if (found.isEmpty) {
+        if (mounted)
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('未能从指定地址检索到模型')));
+      } else {
+        // Merge and update local candidates
+        setState(() {
+          final uniq = <String>[];
+          for (final m in List<String>.from(_localModelCandidates)
+            ..addAll(found)) {
+            if (!uniq.contains(m)) uniq.add(m);
+          }
+          _localModelCandidates = uniq;
+          if (_localModelCandidates.isNotEmpty)
+            _localModelCtrl.text = _localModelCandidates.first;
+          _showModelDropdown = true;
+        });
+        if (mounted)
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('找到模型：${found.join(', ')}')));
+      }
+    } catch (e) {
+      if (mounted)
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('检索模型失败: $e')));
+    } finally {
+      setState(() => _isFetchingModels = false);
+    }
+  }
+
+  List<String> _parseModelsFromBody(String body) {
+    try {
+      final jsonBody = jsonDecode(body);
+      if (jsonBody is List) {
+        if (jsonBody.isEmpty) return [];
+        if (jsonBody.first is String) return List<String>.from(jsonBody);
+        if (jsonBody.first is Map) {
+          return jsonBody.map((e) {
+            if (e is Map) {
+              if (e.containsKey('name')) return e['name'].toString();
+              if (e.containsKey('id')) return e['id'].toString();
+            }
+            return e.toString();
+          }).toList();
+        }
+      } else if (jsonBody is Map) {
+        if (jsonBody.containsKey('models')) {
+          final models = jsonBody['models'];
+          if (models is List) {
+            return models.map((m) {
+              if (m is String) return m;
+              if (m is Map)
+                return (m['name'] ?? m['id'] ?? m['model']).toString();
+              return m.toString();
+            }).toList();
+          }
+        }
+        if (jsonBody.containsKey('data')) {
+          final data = jsonBody['data'];
+          if (data is List) {
+            return data.map((m) {
+              if (m is String) return m;
+              if (m is Map)
+                return (m['name'] ?? m['id'] ?? m['model']).toString();
+              return m.toString();
+            }).toList();
+          }
+        }
+      }
+    } catch (_) {}
+    return [];
+  }
+
   @override
   Widget build(BuildContext context) {
     // Access settings via watch to rebuild if list changes
     final savedModels = context.watch<AppProvider>().settings.savedModels;
+    final modelsToShow =
+        _localModelCandidates.isNotEmpty ? _localModelCandidates : savedModels;
 
     return AlertDialog(
       title: const Text('模型设置'),
@@ -113,11 +254,32 @@ class _SettingsDialogState extends State<SettingsDialog> {
                   obscureText: true,
                 ),
               ] else ...[
-                TextField(
-                  controller: _localUrlCtrl,
-                  decoration: const InputDecoration(
-                      labelText: 'Local API URL',
-                      hintText: 'http://192.168.1.x:11434/v1'),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _localUrlCtrl,
+                        decoration: const InputDecoration(
+                            labelText: 'Local API URL',
+                            hintText: 'http://192.168.1.x:11434/v1'),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      height: 40,
+                      child: FilledButton.icon(
+                        onPressed: _isFetchingModels ? null : _fetchModels,
+                        icon: _isFetchingModels
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2))
+                            : const Icon(Icons.sync),
+                        label: const Text('检测模型'),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
 
@@ -129,7 +291,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                       controller: _localModelCtrl,
                       decoration: InputDecoration(
                           labelText: 'Model Name',
-                          hintText: 'llama3',
+                          hintText: 'glm-4.6:cloud',
                           suffixIcon: IconButton(
                             icon: Icon(_showModelDropdown
                                 ? Icons.arrow_drop_up
@@ -139,7 +301,8 @@ class _SettingsDialogState extends State<SettingsDialog> {
                           )),
                       onTap: () => setState(() => _showModelDropdown = true),
                     ),
-                    if (_showModelDropdown && savedModels.isNotEmpty)
+                    // modelsToShow is calculated at top of build method
+                    if (_showModelDropdown && modelsToShow.isNotEmpty)
                       Container(
                         constraints: const BoxConstraints(maxHeight: 150),
                         margin: const EdgeInsets.only(top: 4),
@@ -150,9 +313,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
                         ),
                         child: ListView.builder(
                           shrinkWrap: true,
-                          itemCount: savedModels.length,
+                          itemCount: modelsToShow.length,
                           itemBuilder: (context, index) {
-                            final model = savedModels[index];
+                            final model = modelsToShow[index];
                             return ListTile(
                               title: Text(model,
                                   style: const TextStyle(fontSize: 14)),
@@ -162,6 +325,11 @@ class _SettingsDialogState extends State<SettingsDialog> {
                               trailing: IconButton(
                                 icon: const Icon(Icons.close, size: 16),
                                 onPressed: () {
+                                  // Remove from local candidates as well if present
+                                  setState(() {
+                                    _localModelCandidates.remove(model);
+                                  });
+                                  // If it exists in provider saved models, delete there too
                                   context
                                       .read<AppProvider>()
                                       .deleteSavedModel(model);

@@ -8,11 +8,17 @@ class AppSettings {
   List<String> savedModels; // Saved history for local models
 
   AppSettings({
-    this.provider = 'gemini',
+    this.provider = 'local',
     this.localApiUrl = 'http://localhost:11434/v1/chat/completions',
-    this.localModelName = 'llama3',
+    this.localModelName = 'glm-4.6:cloud',
     this.geminiApiKey = '',
-    this.savedModels = const ['llama3', 'mistral', 'gemma', 'qwen2'],
+    this.savedModels = const [
+      'glm-4.6:cloud',
+      'llama3',
+      'mistral',
+      'gemma',
+      'qwen2'
+    ],
   });
 
   Map<String, dynamic> toJson() => {
@@ -25,15 +31,15 @@ class AppSettings {
 
   factory AppSettings.fromJson(Map<String, dynamic> json) {
     return AppSettings(
-      provider: json['provider'] ?? 'gemini',
+      provider: json['provider'] ?? 'local',
       localApiUrl:
           json['localApiUrl'] ?? 'http://localhost:11434/v1/chat/completions',
-      localModelName: json['localModelName'] ?? 'llama3',
+      localModelName: json['localModelName'] ?? 'glm-4.6:cloud',
       geminiApiKey: json['geminiApiKey'] ?? '',
       savedModels: (json['savedModels'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
-          ['llama3', 'mistral', 'gemma', 'qwen2'],
+          ['glm-4.6:cloud', 'llama3', 'mistral', 'gemma', 'qwen2'],
     );
   }
 }
