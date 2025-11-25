@@ -13,7 +13,7 @@ dependencies:
   http: ^1.2.0
   shared_preferences: ^2.2.2
   provider: ^6.1.1
-  flutter_tts: ^3.6.0
+  flutter_tts: ^4.2.3
   lucide_icons: ^0.257.0 # Optional, using material icons is fine too, but mapping lucide adds style
 
 dev_dependencies:

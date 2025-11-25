@@ -51,7 +51,7 @@ class EtymologyVisualizer extends StatelessWidget {
                 Wrap(
                   alignment: WrapAlignment.center,
                   crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 8,
+                  spacing: 30,
                   runSpacing: 12,
                   children: [
                     ...data.etymology.parts

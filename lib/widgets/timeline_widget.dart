@@ -30,30 +30,42 @@ class TimelineWidget extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: history.asMap().entries.map((entry) {
+            child: Column(children: [
+              ...history.asMap().entries.map((entry) {
                 final isLast = entry.key == history.length - 1;
                 return IntrinsicHeight(
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Column(
-                        children: [
-                          Container(
-                              width: 12,
-                              height: 12,
-                              decoration: BoxDecoration(
-                                  color: Theme.of(context).cardColor,
-                                  border:
-                                      Border.all(color: Colors.amber, width: 3),
-                                  shape: BoxShape.circle)),
-                          if (!isLast)
-                            Expanded(
-                                child: Container(
-                                    width: 2, color: Colors.grey.shade200)),
-                        ],
+                      Expanded(
+                        child: Row(
+                          children: [
+                            const Expanded(flex: 3, child: SizedBox()),
+                            Transform.translate(
+                              offset: const Offset(0, 25),
+                              child: Column(
+                                children: [
+                                  Container(
+                                      width: 12,
+                                      height: 12,
+                                      decoration: BoxDecoration(
+                                          color: Theme.of(context).cardColor,
+                                          border: Border.all(
+                                              color: Colors.amber, width: 3),
+                                          shape: BoxShape.circle)),
+                                  if (!isLast)
+                                    Expanded(
+                                        child: Container(
+                                            width: 2,
+                                            color: Colors.grey.shade200)),
+                                ],
+                              ),
+                            ),
+                            const Expanded(flex: 3, child: SizedBox()),
+                          ],
+                        ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 24.0),
@@ -92,7 +104,7 @@ class TimelineWidget extends StatelessWidget {
                   ),
                 );
               }).toList(),
-            ),
+            ]),
           ),
         ],
       ),

@@ -102,7 +102,7 @@ class ExamplesWidget extends StatelessWidget {
   Widget _buildExampleItem(BuildContext context, ExampleUsage ex) {
     // Use a fixed left slot for the context pill so that all sentences
     // are aligned at the same horizontal position regardless of pill width.
-    const leftSlotWidth = 110.0;
+    // const leftSlotWidth = 110.0;
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.only(left: 12, right: 8),
@@ -111,18 +111,25 @@ class ExamplesWidget extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: leftSlotWidth,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          Expanded(
+            // width: leftSlotWidth,
+            child: Row(
               children: [
-                if (ex.context.trim().isNotEmpty)
-                  _buildContextPill(context, ex.context),
+                const Expanded(flex: 5, child: SizedBox()),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (ex.context.trim().isNotEmpty)
+                      _buildContextPill(context, ex.context),
+                  ],
+                ),
+                const Expanded(flex: 5, child: SizedBox()),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
+          const SizedBox(width: 8),
+          Flexible(
+            fit: FlexFit.loose,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

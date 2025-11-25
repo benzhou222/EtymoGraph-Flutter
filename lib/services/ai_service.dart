@@ -24,27 +24,42 @@ The JSON structure must match this structure exactly:
 
   Future<WordAnalysis> analyzeWord(
       String word, List<String> history, AppSettings settings) async {
+    // 1. Prepare Context from History (Limit to 8 to avoid context overflow)
     final recentWords = history
         .where((w) => w.toLowerCase() != word.toLowerCase())
         .take(8)
         .toList();
-    final historyContext = recentWords.isNotEmpty
-        ? "User's recently studied words: ${recentWords.join(', ')}."
+
+    // 2. Construct Stronger History Instruction
+    final historyInstruction = recentWords.isNotEmpty
+        ? '''
+        IMPORTANT - MEMORY REINFORCEMENT TASK:
+        The user has recently studied these words: [${recentWords.join(', ')}].
+        
+        INSTRUCTION FOR "examples" ARRAY:
+        You MUST attempt to construct the English example sentences so that they contain BOTH the current word "$word" AND at least one word from the list above.
+        Create a semantic connection between "$word" and the history words.
+        
+        Example: If current word is "adverse" and history has "benefit", generate a sentence like "The adverse weather did not negate the benefits of the journey."
+        '''
         : "";
 
     final userPrompt = '''
     请详细分析单词 "$word"。
+    
+    任务清单：
     1. 分析其词根（特别是拉丁语/希腊语词源），解释每一部分的含义。
     2. 追溯其含义在历史上的演变过程。
     3. 列出 8-10 个具有相同词根的同源词（不要过多），提供音标和简述联系。
-    4. 对于同源词的‘relation’字段，请进行详细的构词法分析（例如：前缀+词根=含义），解释其与词根的深层联系。
-    5. 根据不同场景提供含有该单词的英语例句（sentence），并附带中文解释。
+    4. 同源词的 'relation' 字段：必须进行详细的构词法分析（例如：前缀+词根=含义），解释其与词根的深层联系。
+    5. 例句生成 (examples)：根据不同场景提供含有该单词的英语例句，并附带中文解释。
     
-    $historyContext 特别指令：在生成例句时，请尝试将“用户最近学过的单词”自然地融入到新单词的例句中。
+    $historyInstruction
     
-    重要约束：
-    - 所有解释、定义使用简体中文。
-    - Examples 中的 sentence 字段必须保持英语原文，不要翻译。
+    数据约束：
+    - 输出必须是严格的 JSON 格式。
+    - 所有中文解释使用简体中文。
+    - Examples 中的 sentence 字段必须保留英语原文，严禁翻译。
     - 同源词列表 (cognates) 中绝不要包含单词 "$word" 本身。
     ''';
 
@@ -92,7 +107,7 @@ The JSON structure must match this structure exactly:
     }
 
     final model = GenerativeModel(
-      model: 'gemini-2.0-flash',
+      model: 'gemini-1.5-flash',
       apiKey: settings.geminiApiKey,
       generationConfig: GenerationConfig(responseMimeType: 'application/json'),
       systemInstruction:
@@ -114,8 +129,8 @@ The JSON structure must match this structure exactly:
   Future<WordAnalysis> _analyzeWithLocal(
       String word, String prompt, AppSettings settings) async {
     try {
-      // Normalize URL logic
       var urlStr = settings.localApiUrl.trim();
+      // Normalize URL
       if (urlStr.endsWith('/')) urlStr = urlStr.substring(0, urlStr.length - 1);
       if (!urlStr.endsWith('/v1/chat/completions') &&
           !urlStr.endsWith('/chat/completions')) {
@@ -138,7 +153,7 @@ The JSON structure must match this structure exactly:
             {"role": "user", "content": prompt}
           ],
           "stream": false,
-          "format": "json", // Force JSON for Ollama
+          "format": "json",
           "temperature": 0.2,
         }),
       );
@@ -164,7 +179,7 @@ The JSON structure must match this structure exactly:
             content.replaceAll('```json', '').replaceAll('```', '').trim();
       }
 
-      // Fix common JSON errors
+      // Fix common JSON errors from local models
       jsonString = jsonString.replaceAllMapped(
           RegExp(r'\\u(?![a-fA-F0-9]{4})'), (match) => "\\\\u");
 

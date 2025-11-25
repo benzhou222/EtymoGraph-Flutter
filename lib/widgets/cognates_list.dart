@@ -43,69 +43,75 @@ class CognatesList extends StatelessWidget {
                 final item = cognates[index];
                 return Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Column(
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(item.word,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16)),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text("[${item.pronunciation}]",
-                                        style: const TextStyle(
-                                            fontFamily: 'monospace',
-                                            fontSize: 13,
-                                            color: Colors.grey)),
-                                    const SizedBox(width: 8),
-                                    IconButton(
-                                      icon: const Icon(Icons.volume_up,
-                                          size: 18, color: Colors.blueAccent),
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
-                                      onPressed: () => TTSService()
-                                          .speak(item.word, waitForStop: false),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            fit: FlexFit.loose,
-                            child: Container(
-                              constraints: const BoxConstraints(maxWidth: 420),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 8),
-                              decoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .surfaceContainerHighest,
-                                  borderRadius: BorderRadius.circular(8)),
-                              child: Text(
-                                item.relation,
-                                style: const TextStyle(fontSize: 12),
-                                textAlign: TextAlign.left,
-                                softWrap: true,
-                                maxLines: 6,
-                                overflow: TextOverflow.ellipsis,
+                      Expanded(
+                        child: Row(
+                          children: [
+                            const Expanded(flex: 3, child: SizedBox()),
+                            Expanded(
+                              flex: 4,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(item.word,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16)),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text("[${item.pronunciation}]",
+                                          style: const TextStyle(
+                                              fontFamily: 'monospace',
+                                              fontSize: 13,
+                                              color: Colors.grey)),
+                                      const SizedBox(width: 8),
+                                      IconButton(
+                                        icon: const Icon(Icons.volume_up,
+                                            size: 18, color: Colors.blueAccent),
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                        onPressed: () => TTSService().speak(
+                                            item.word,
+                                            waitForStop: false),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(item.definition,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium),
+                                ],
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(item.definition,
-                          style: Theme.of(context).textTheme.bodyMedium),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        fit: FlexFit.loose,
+                        child: Container(
+                          constraints: const BoxConstraints(maxWidth: 420),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 8),
+                          decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(8)),
+                          child: Text(
+                            item.relation,
+                            style: const TextStyle(fontSize: 12),
+                            textAlign: TextAlign.left,
+                            softWrap: true,
+                            maxLines: 6,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 );
