@@ -38,6 +38,7 @@ class TimelineWidget extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Expanded(
+                        flex: 1,
                         child: Row(
                           children: [
                             const Expanded(flex: 3, child: SizedBox()),
@@ -61,12 +62,13 @@ class TimelineWidget extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            const Expanded(flex: 3, child: SizedBox()),
+                            const Expanded(flex: 4, child: SizedBox()),
                           ],
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 30),
                       Expanded(
+                        flex: 2,
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 24.0),
                           child: Column(

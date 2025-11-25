@@ -47,11 +47,12 @@ class CognatesList extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
+                        flex: 1,
                         child: Row(
                           children: [
                             const Expanded(flex: 3, child: SizedBox()),
-                            Expanded(
-                              flex: 4,
+                            SizedBox(
+                              width: 150,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -87,28 +88,38 @@ class CognatesList extends StatelessWidget {
                                 ],
                               ),
                             ),
+                            const Expanded(flex: 3, child: SizedBox()),
                           ],
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        fit: FlexFit.loose,
-                        child: Container(
-                          constraints: const BoxConstraints(maxWidth: 420),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 8),
-                          decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(8)),
-                          child: Text(
-                            item.relation,
-                            style: const TextStyle(fontSize: 12),
-                            textAlign: TextAlign.left,
-                            softWrap: true,
-                            maxLines: 6,
-                            overflow: TextOverflow.ellipsis,
+                      const SizedBox(width: 30),
+                      Expanded(
+                        flex: 2,
+                        child: Transform.translate(
+                          offset: const Offset(0, 10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                constraints:
+                                    const BoxConstraints(maxWidth: 420),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 8),
+                                decoration: BoxDecoration(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .surfaceContainerHighest,
+                                    borderRadius: BorderRadius.circular(8)),
+                                child: Text(
+                                  item.relation,
+                                  style: const TextStyle(fontSize: 12),
+                                  textAlign: TextAlign.left,
+                                  softWrap: true,
+                                  maxLines: 6,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
