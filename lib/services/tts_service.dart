@@ -19,8 +19,9 @@ class TTSService {
   Future<void> init() async {
     try {
       await _tts.setLanguage('en-US');
-      await _tts.setSpeechRate(0.75);
-      await _tts.setPitch(1.0);
+      await _tts.setSpeechRate(0.65);
+      await _tts.setPitch(0.7);
+      await _tts.setVolume(0.8);
 
       // Ensure the plugin notifies us when playback starts/stops so we can
       // reliably interrupt and wait for stop to complete.
