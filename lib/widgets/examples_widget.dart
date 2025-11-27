@@ -111,21 +111,28 @@ class ExamplesWidget extends StatelessWidget {
       child: Row(
         // crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Expanded(flex: 1, child: SizedBox()),
-          SizedBox(
-            width: 200,
+          Expanded(
+            flex: 10,
             child: Row(
               children: [
-                if (ex.context.trim().isNotEmpty) ...[
-                  _buildContextPill(context, ex.context),
-                  // const SizedBox(height: 8),
-                ]
+                const Expanded(flex: 1, child: SizedBox()),
+                Expanded(
+                  flex: 3,
+                  child: SizedBox(
+                    child: Row(
+                      children: [
+                        if (ex.context.trim().isNotEmpty)
+                          _buildContextPill(context, ex.context),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
           const SizedBox(width: 30),
           Expanded(
-            flex: 6,
+            flex: 21,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
