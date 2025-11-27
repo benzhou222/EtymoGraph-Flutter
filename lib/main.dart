@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'providers/app_provider.dart';
 import 'screens/home_screen.dart';
 import 'services/tts_service.dart';
+import 'dart:ui';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +31,7 @@ class EtymoGraphApp extends StatelessWidget {
     return MaterialApp(
       title: 'EtymoGraph',
       debugShowCheckedModeBanner: false,
+      scrollBehavior: const AppScrollBehavior(),
       themeMode: themeMode,
       theme: ThemeData(
         useMaterial3: true,
@@ -46,4 +48,15 @@ class EtymoGraphApp extends StatelessWidget {
       home: const HomeScreen(),
     );
   }
+}
+
+class AppScrollBehavior extends MaterialScrollBehavior {
+  const AppScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse, // 允许鼠标拖拽
+        PointerDeviceKind.trackpad,
+      };
 }

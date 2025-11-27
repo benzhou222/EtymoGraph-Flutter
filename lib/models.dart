@@ -10,10 +10,10 @@ class AppSettings {
   AppSettings({
     this.provider = 'local',
     this.localApiUrl = 'http://localhost:11434/v1/chat/completions',
-    this.localModelName = 'glm-4.6:cloud',
+    this.localModelName = 'gpt-oss:20b',
     this.geminiApiKey = '',
     this.savedModels = const [
-      'glm-4.6:cloud',
+      'gpt-oss:20b',
       'llama3',
       'mistral',
       'gemma',
@@ -34,12 +34,12 @@ class AppSettings {
       provider: json['provider'] ?? 'local',
       localApiUrl:
           json['localApiUrl'] ?? 'http://localhost:11434/v1/chat/completions',
-      localModelName: json['localModelName'] ?? 'glm-4.6:cloud',
+      localModelName: json['localModelName'] ?? 'gpt-oss:20b',
       geminiApiKey: json['geminiApiKey'] ?? '',
       savedModels: (json['savedModels'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
-          ['glm-4.6:cloud', 'llama3', 'mistral', 'gemma', 'qwen2'],
+          ['gpt-oss:20b', 'llama3', 'mistral', 'gemma', 'qwen2'],
     );
   }
 }

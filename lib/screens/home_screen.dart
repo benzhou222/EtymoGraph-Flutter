@@ -96,33 +96,87 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 if (provider.history.isNotEmpty) ...[
                   const SizedBox(height: 12),
-                  SizedBox(
-                    height: 36,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount:
-                          provider.history.length + 1, // +1 for clear button
-                      separatorBuilder: (c, i) => const SizedBox(width: 8),
-                      itemBuilder: (context, index) {
-                        if (index == 0) {
-                          return ActionChip(
+
+                  // 固定的历史记录列表
+                  // SizedBox(
+                  //   height: 36,
+                  //   child: ListView.separated(
+                  //     scrollDirection: Axis.horizontal,
+                  //     itemCount:
+                  //         provider.history.length + 1, // +1 for clear button
+                  //     separatorBuilder: (c, i) => const SizedBox(width: 8),
+                  //     itemBuilder: (context, index) {
+                  //       if (index == 0) {
+                  //         return ActionChip(
+                  //           avatar: const Icon(Icons.delete_outline, size: 16),
+                  //           label: const Text("清除"),
+                  //           onPressed: () => provider.clearHistory(),
+                  //           visualDensity: VisualDensity.compact,
+                  //         );
+                  //       }
+                  //       final word = provider.history[index - 1];
+                  //       return ActionChip(
+                  //         label: Text(word),
+                  //         onPressed: () {
+                  //           _searchCtrl.text = word;
+                  //           _performSearch();
+                  //         },
+                  //         visualDensity: VisualDensity.compact,
+                  //       );
+                  //     },
+                  //   ),
+                  // ),
+
+                  Row(
+                    children: [
+                      // 1. 清除按钮 (固定在最左侧)
+                      Expanded(
+                        flex: 1,
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: ActionChip(
                             avatar: const Icon(Icons.delete_outline, size: 16),
                             label: const Text("清除"),
                             onPressed: () => provider.clearHistory(),
                             visualDensity: VisualDensity.compact,
-                          );
-                        }
-                        final word = provider.history[index - 1];
-                        return ActionChip(
-                          label: Text(word),
-                          onPressed: () {
-                            _searchCtrl.text = word;
-                            _performSearch();
-                          },
-                          visualDensity: VisualDensity.compact,
-                        );
-                      },
-                    ),
+                            backgroundColor: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest
+                                .withOpacity(0.3),
+                            side: BorderSide.none, // 去掉边框使其更像一个功能按钮
+                          ),
+                        ),
+                      ),
+                      // 使用 SingleChildScrollView 实现水平滚动
+                      Expanded(
+                        flex: 8,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          // 加上 clipBehavior 保证滚动时的边缘裁剪效果平滑
+                          clipBehavior: Clip.hardEdge,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // 2. 历史记录单词列表
+                              ...provider.history.map((word) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: ActionChip(
+                                    label: Text(word),
+                                    onPressed: () {
+                                      _searchCtrl.text = word;
+                                      _performSearch();
+                                    },
+                                    visualDensity: VisualDensity.compact,
+                                    // 可选：给历史记录加一点不同的样式区分
+                                  ),
+                                );
+                              }),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ]
               ],
