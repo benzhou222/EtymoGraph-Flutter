@@ -67,6 +67,7 @@ class AppProvider with ChangeNotifier {
       localModelName: newSettings.localModelName,
       geminiApiKey: newSettings.geminiApiKey,
       savedModels: mutableSavedModels,
+      proxyUrl: newSettings.proxyUrl,
     );
 
     // 4. Persist to storage
@@ -88,6 +89,7 @@ class AppProvider with ChangeNotifier {
       localModelName: _settings.localModelName,
       geminiApiKey: _settings.geminiApiKey,
       savedModels: mutableSavedModels,
+      proxyUrl: _settings.proxyUrl,
     );
 
     final prefs = await SharedPreferences.getInstance();

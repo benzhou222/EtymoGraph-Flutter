@@ -5,20 +5,22 @@ class AppSettings {
   String localApiUrl;
   String localModelName;
   String geminiApiKey;
-  List<String> savedModels; // Saved history for local models
+  List<String> savedModels;
+  String proxyUrl;
 
   AppSettings({
     this.provider = 'local',
     this.localApiUrl = 'http://localhost:11434/v1/chat/completions',
-    this.localModelName = 'gpt-oss:20b',
+    this.localModelName = 'gemma3:27b',
     this.geminiApiKey = '',
     this.savedModels = const [
-      'gpt-oss:20b',
+      'gemma3:27b',
       'llama3',
       'mistral',
       'gemma',
       'qwen2'
     ],
+    this.proxyUrl = '',
   });
 
   Map<String, dynamic> toJson() => {
@@ -27,6 +29,7 @@ class AppSettings {
         'localModelName': localModelName,
         'geminiApiKey': geminiApiKey,
         'savedModels': savedModels,
+        'proxyUrl': proxyUrl,
       };
 
   factory AppSettings.fromJson(Map<String, dynamic> json) {
@@ -34,12 +37,13 @@ class AppSettings {
       provider: json['provider'] ?? 'local',
       localApiUrl:
           json['localApiUrl'] ?? 'http://localhost:11434/v1/chat/completions',
-      localModelName: json['localModelName'] ?? 'gpt-oss:20b',
+      localModelName: json['localModelName'] ?? 'gemma3:27b',
       geminiApiKey: json['geminiApiKey'] ?? '',
       savedModels: (json['savedModels'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
-          ['gpt-oss:20b', 'llama3', 'mistral', 'gemma', 'qwen2'],
+          ['gemma3:27b', 'llama3', 'mistral', 'gemma', 'qwen2'],
+      proxyUrl: json['proxyUrl'] ?? '',
     );
   }
 }

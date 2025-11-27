@@ -1,5 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
+
 import 'package:http/http.dart' as http;
+import 'package:http/io_client.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import '../models.dart';
 
@@ -106,12 +109,26 @@ The JSON structure must match this structure exactly:
           "Gemini API Key is empty. Please configure it in settings.");
     }
 
+    HttpClient? httpClient;
+    if (settings.proxyUrl.isNotEmpty) {
+      final proxyUri = Uri.parse(settings.proxyUrl);
+      final proxyAddress = '${proxyUri.host}:${proxyUri.port}';
+
+      httpClient = HttpClient()
+        ..findProxy = (uri) {
+          return 'PROXY $proxyAddress;';
+        }
+        ..badCertificateCallback =
+            (X509Certificate cert, String host, int port) => true;
+    }
+
     final model = GenerativeModel(
       model: 'gemini-1.5-flash',
       apiKey: settings.geminiApiKey,
       generationConfig: GenerationConfig(responseMimeType: 'application/json'),
       systemInstruction:
           Content.text("你是一位世界级的词源学家。请提供准确的单词分析。输出语言必须为简体中文，但英语例句需保留原文。"),
+      httpClient: httpClient != null ? IOClient(httpClient) : null,
     );
 
     try {

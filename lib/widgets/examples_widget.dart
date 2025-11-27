@@ -109,57 +109,46 @@ class ExamplesWidget extends StatelessWidget {
       decoration: const BoxDecoration(
           border: Border(left: BorderSide(color: Colors.purple, width: 4))),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        // crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            flex: 5,
-            // width: leftSlotWidth,
+          const Expanded(flex: 1, child: SizedBox()),
+          SizedBox(
+            width: 200,
             child: Row(
               children: [
-                const Expanded(flex: 3, child: SizedBox()),
-                Transform.translate(
-                  offset: const Offset(0, 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (ex.context.trim().isNotEmpty)
-                        _buildContextPill(context, ex.context),
-                    ],
-                  ),
-                ),
-                const Expanded(flex: 4, child: SizedBox()),
+                if (ex.context.trim().isNotEmpty) ...[
+                  _buildContextPill(context, ex.context),
+                  // const SizedBox(height: 8),
+                ]
               ],
             ),
           ),
           const SizedBox(width: 30),
           Expanded(
-            flex: 11,
-            child: Flexible(
-              fit: FlexFit.loose,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  RichText(
-                    textAlign: TextAlign.left,
-                    text: TextSpan(
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Theme.of(context).textTheme.bodyLarge?.color,
-                        height: 1.5,
-                        fontFamily: 'Roboto', // Sans-serif
-                        letterSpacing: 0.5,
-                      ),
-                      children: _highlightText(ex.sentence, context),
+            flex: 6,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                RichText(
+                  textAlign: TextAlign.left,
+                  text: TextSpan(
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                      height: 1.5,
+                      fontFamily: 'Roboto', // Sans-serif
+                      letterSpacing: 0.5,
                     ),
+                    children: _highlightText(ex.sentence, context),
                   ),
-                  const SizedBox(height: 4),
-                  Text(ex.explanation,
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                          fontSize: 13,
-                          color: Theme.of(context).textTheme.bodySmall?.color)),
-                ],
-              ),
+                ),
+                const SizedBox(height: 4),
+                Text(ex.explanation,
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                        fontSize: 13,
+                        color: Theme.of(context).textTheme.bodySmall?.color)),
+              ],
             ),
           ),
         ],

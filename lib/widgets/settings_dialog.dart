@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:io';
 import '../providers/app_provider.dart';
 import '../models.dart';
 
@@ -17,10 +18,12 @@ class _SettingsDialogState extends State<SettingsDialog> {
   late TextEditingController _geminiKeyCtrl;
   late TextEditingController _localUrlCtrl;
   late TextEditingController _localModelCtrl;
+  late TextEditingController _proxyUrlCtrl;
   List<String> _localModelCandidates = [];
   bool _isFetchingModels = false;
   bool _showModelDropdown = false;
   bool _isSaving = false;
+  bool _isTestingProxy = false;
 
   @override
   void initState() {
@@ -31,6 +34,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
     _localUrlCtrl = TextEditingController(text: settings.localApiUrl);
     _localModelCtrl = TextEditingController(text: settings.localModelName);
     _localModelCandidates = List<String>.from(settings.savedModels);
+    _proxyUrlCtrl = TextEditingController(text: settings.proxyUrl);
   }
 
   Future<void> _save() async {
@@ -55,6 +59,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
         localModelName: _localModelCtrl.text.trim(),
         geminiApiKey: _geminiKeyCtrl.text.trim(),
         savedModels: safeSavedModels,
+        proxyUrl: _proxyUrlCtrl.text.trim(),
       );
 
       // Await the save operation
@@ -203,6 +208,52 @@ class _SettingsDialogState extends State<SettingsDialog> {
     return [];
   }
 
+  Future<void> _testProxy() async {
+    if (_isTestingProxy) return;
+    setState(() => _isTestingProxy = true);
+
+    final proxyUrl = _proxyUrlCtrl.text.trim();
+    if (proxyUrl.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Proxy URL is empty')),
+      );
+      setState(() => _isTestingProxy = false);
+      return;
+    }
+
+    try {
+      final proxyUri = Uri.parse(proxyUrl);
+      final client = HttpClient()
+        ..findProxy = (uri) {
+          return 'PROXY ${proxyUri.host}:${proxyUri.port};';
+        }
+        ..badCertificateCallback =
+            (X509Certificate cert, String host, int port) => true;
+
+      final request = await client.getUrl(Uri.parse('https://www.google.com'));
+      final response = await request.close();
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Proxy connection successful!')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Proxy connection failed: ${response.statusCode}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Proxy connection failed: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isTestingProxy = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Access settings via watch to rebuild if list changes
@@ -252,6 +303,34 @@ class _SettingsDialogState extends State<SettingsDialog> {
                       labelText: 'Gemini API Key',
                       hintText: 'Optional if using default env'),
                   obscureText: true,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _proxyUrlCtrl,
+                        decoration: const InputDecoration(
+                            labelText: 'Proxy URL',
+                            hintText: 'http://127.0.0.1:7890'),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      height: 40,
+                      child: FilledButton.icon(
+                        onPressed: _isTestingProxy ? null : _testProxy,
+                        icon: _isTestingProxy
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2))
+                            : const Icon(Icons.sync),
+                        label: const Text('Test Proxy'),
+                      ),
+                    ),
+                  ],
                 ),
               ] else ...[
                 Row(
